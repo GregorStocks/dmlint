@@ -13,28 +13,6 @@ tokens {
 	DOT = '.';
 }
 
-@header {
-import sys
-import traceback
-
-from DMLexer import DMLexer
-}
-
-@main {
-def main(argv, otherArg=None):
-	char_stream = ANTLRFileStream(sys.argv[1])
-	lexer = DMLexer(char_stream)
-	tokens = CommonTokenStream(lexer)
-	parser = DMParser(tokens);
-
-	try:
-		parser.expr()
-	except RecognitionException:
-		traceback.print_stack()
-}
-
-
-
 /*------------------------------------------------------------------
  * PARSER RULES
  *------------------------------------------------------------------*/

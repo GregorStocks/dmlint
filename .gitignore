@@ -1,3 +1,7 @@
 lib/
-src/grammar-genfiles
+src/grammar/DM*.py
+src/grammar/*.tokens
+src/grammar/*__.g
+*.swp
+*.pyc
 
