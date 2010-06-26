@@ -1,9 +1,9 @@
-default: grammar
+default: antlr
 
 antlr: src/grammar/DM.g
-	java -cp lib/antlrworks-1.4.jar org.antlr.Tool -o src/grammar/ src/grammar/DM.g
+	cd src/grammar & \
+	java -cp ../../lib/antlr-3.1.2.jar org.antlr.Tool -o ../grammar-genfiles/ DM.g
 
-grammar: antlr
-	javac -d bin -cp lib/antlr-runtime-3.2.jar:lib/annares-cpp.jar src/grammar/*.java
 clean:
 	rm -rf bin
+	rm -rf src/grammar-genfiles

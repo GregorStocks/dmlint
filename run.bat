@@ -1,1 +1,1 @@
-java -cp lib/antlr-runtime-3.2.jar;bin/ DMParser
+python src/grammar-genfiles/DMParser.py C:/Users/me/code/isno/isno.dme

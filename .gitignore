@@ -1,4 +1,3 @@
-bin/*
-lib/*.jar
+lib/
 src/grammar-genfiles
 
