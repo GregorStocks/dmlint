@@ -24,4 +24,4 @@ def main(filename, just_preprocess = True):
 if len(sys.argv) > 1:
 	main(sys.argv[1])
 else:
-	main('C:/Users/me/code/isno/isno.dme')
+	main('C:/Users/me/code/isno/isno.dme', False)

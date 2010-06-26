@@ -42,9 +42,9 @@ class PreprocessedFile(object):
 files already included and in the given directory.'''
 def process_line(line, defines, included, dir):
 	# if it's a #define, add it to the defines list
-	m = re.match('#define\s+(?P<from>\w+)(\s+(?P<to>.*?))?$', line)
+	m = re.match('#define\s+(?P<from>\w+)(\s+(?P<to>.*?))?\s*(//.*)?$', line)
 	if m is not None:
-		defines.append(m.group('from', 'to'))
+		defines.insert(0, m.group('from', 'to'))
 		return ''
 
 	# if it's an #include, include it!
@@ -52,7 +52,7 @@ def process_line(line, defines, included, dir):
 	if m is not None:
 		f = PreprocessedFile(os.path.join(dir, m.group('filename')), defines,
 				included)
-		return f.read()
+		return f.read() + '\n'
 	# TODO: #undef, __FILE__, #if, and all those other ones
 	# but they're lame so yknow
 	# Process all the #defines until none are applicable any more.
