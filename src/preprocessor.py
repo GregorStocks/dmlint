@@ -15,6 +15,9 @@ class PreprocessedFile(object):
 		filename = os.path.abspath(filename)
 		if filename in included:
 			return
+		if filename.find('.dmp') != -1:
+			# ignore #includes of maps, at least for now
+			return
 		included.append(filename)
 
 		# For now, don't worry about sequential yadda yadda - just read the
@@ -22,7 +25,7 @@ class PreprocessedFile(object):
 		with file(filename, 'rb') as f:
 			for line in f.readlines():
 				self.data += process_line(line, defines, included,
-						os.path.split(filename)[0]) + '\n'
+						os.path.split(filename)[0])
 
 	def read(self, numbytes = -1):
 		if numbytes >= len(self.data) or numbytes < 0:

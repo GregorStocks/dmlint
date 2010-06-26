@@ -6,8 +6,12 @@ from grammar.DMParser import DMParser
 from antlr3 import ANTLRInputStream, CommonTokenStream
 from preprocessor import PreprocessedFile
 
-def main(filename):
-	char_stream = ANTLRInputStream(PreprocessedFile(filename))
+def main(filename, just_preprocess = True):
+	preprocessed = PreprocessedFile(filename)
+	if just_preprocess:
+		print preprocessed.read()
+		return
+	char_stream = ANTLRInputStream(preprocessed)
 	lexer = DMLexer(char_stream)
 	tokens = CommonTokenStream(lexer)
 	parser = DMParser(tokens);
