@@ -1,8 +1,5 @@
 grammar DM;
 
-options {
-	language = Python;
-}
 
 tokens {
 	PLUS = '+';
@@ -35,6 +32,21 @@ tokens {
 	SEMICOLON = ';';
 	BNOT = '~';
 	XOR = '^';
+}
+
+@members {
+    public static void main(String[] args) throws Exception {
+        DMLexer lex = new DMLexer(new ANTLRFileStream(args[0]));
+       	CommonTokenStream tokens = new CommonTokenStream(lex);
+
+        DMParser parser = new DMParser(tokens);
+
+        try {
+            parser.expr();
+        } catch (RecognitionException e)  {
+            e.printStackTrace();
+        }
+    }
 }
 
 /*------------------------------------------------------------------

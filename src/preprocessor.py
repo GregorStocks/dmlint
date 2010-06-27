@@ -6,6 +6,7 @@ import sys
 class PreprocessedFile(object):
 	data = None
 	curbyte = 0
+	glob = True
 	def __init__(self, filename, defines = None, included = None):
 		if defines is None:
 			defines = [('DM_VERSION', '300')] # Good enough.
@@ -40,7 +41,7 @@ class PreprocessedFile(object):
 		\]
 		(?P<right>.*?)"'''
 		while re.search(r, self.data):
-			self.data = re.sub(r, lambda m: 'text("%s[]%s", %s)' % m.group('left', 'right', 'middle'), self.data)
+			self.data = re.sub(r, argh, self.data)
 
 	def read(self, numbytes = -1):
 		if numbytes >= len(self.data) or numbytes < 0:
@@ -52,6 +53,10 @@ class PreprocessedFile(object):
 			self.data = self.data[numbytes:]
 			return r
 		# Line numbers are doomed. TODO: fix that
+
+def argh(m):
+	s = 'text("%s[]%s", %s)' % m.group('left', 'right', 'middle')
+	return s
 
 '''The result of preprocessing the given line with the given set of defines and
 files already included and in the given directory.'''

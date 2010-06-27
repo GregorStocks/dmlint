@@ -1,1 +1,1 @@
-python src/dmlint.py $1
+python src/dmlint.py $1 $2
