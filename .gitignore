@@ -1,7 +1,5 @@
 lib/
-src/grammar/DM*.py
-src/grammar/*.tokens
-src/grammar/*__.g
+bin/
+src/gen
 *.swp
-*.pyc
 

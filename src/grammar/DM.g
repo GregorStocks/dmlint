@@ -1,6 +1,5 @@
 grammar DM;
 
-
 tokens {
 	PLUS = '+';
 	MINUS = '-';
@@ -34,19 +33,12 @@ tokens {
 	XOR = '^';
 }
 
-@members {
-    public static void main(String[] args) throws Exception {
-        DMLexer lex = new DMLexer(new ANTLRFileStream(args[0]));
-       	CommonTokenStream tokens = new CommonTokenStream(lex);
+@header {
+	package com.buttware.dmlint.grammar;
+}
 
-        DMParser parser = new DMParser(tokens);
-
-        try {
-            parser.expr();
-        } catch (RecognitionException e)  {
-            e.printStackTrace();
-        }
-    }
+@lexer::header {
+	package com.buttware.dmlint.grammar;
 }
 
 /*------------------------------------------------------------------
