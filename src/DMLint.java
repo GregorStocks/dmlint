@@ -1,14 +1,17 @@
 package com.buttware.dmlint;
-import com.buttware.dmlint.grammar.DMLexer;
+import com.buttware.dmlint.grammar.*;
 import org.antlr.runtime.*;
 
 class DMLint {
     public static void main(String[] args) throws Exception {
-        DMLexer lex = new DMLexer(new ANTLRFileStream(args[0]));
+		PreprocessedFileStream f = new PreprocessedFileStream(args[0]);
+
+		System.out.println(f.getString());
+        /*DMLexer lex = new DMLexer(f);
        	CommonTokenStream tokens = new CommonTokenStream(lex);
 
 		// run the lexer - remove when running parser too
-		tokens.getTokens();
+		tokens.getTokens();*/
 
         /*DMParser parser = new DMParser(tokens);
 
