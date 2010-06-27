@@ -15,7 +15,7 @@ class PreprocessedFile(object):
 		filename = os.path.abspath(filename)
 		if filename in included:
 			return
-		if filename.find('.dmp') != -1:
+		if filename.find('.dmp') != -1 or filename.find('dmf') != -1:
 			# ignore #includes of maps, at least for now
 			return
 		included.append(filename)
@@ -26,6 +26,8 @@ class PreprocessedFile(object):
 			for line in f.readlines():
 				self.data += process_line(line, defines, included,
 						os.path.split(filename)[0])
+		# TODO: actually handle text documents the right way
+		self.data = re.sub('(?s){"(.+?)"}', '""', self.data)
 
 	def read(self, numbytes = -1):
 		if numbytes >= len(self.data) or numbytes < 0:
@@ -55,6 +57,8 @@ def process_line(line, defines, included, dir):
 		return f.read() + '\n'
 	# TODO: #undef, __FILE__, #if, and all those other ones
 	# but they're lame so yknow
+	if line.strip().startswith('#'):
+		return '\n'
 	# Process all the #defines until none are applicable any more.
 	# This probably isn't how a preprocessor is supposed to work, but
 	# who cares?

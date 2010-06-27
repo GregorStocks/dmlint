@@ -34,7 +34,9 @@ tokens {
 	QUESTION = '?';
 	COLON = ':';
 	MODULO = '%';
-	
+	SEMICOLON = ';';
+	BNOT = '~';
+	XOR = '^';
 }
 
 /*------------------------------------------------------------------
@@ -60,40 +62,32 @@ FLOAT: DIGIT+ DOT (DIGIT)* EXPONENT?
      | DOT DIGIT+ EXPONENT?
      | DIGIT+ EXPONENT;
 
-COMMENT: SLASH SLASH ~NEWLINE* NEWLINE {$channel=HIDDEN;}
-       | SLASH STAR ( options {greedy=false;} : . )* STAR SLASH {$channel=HIDDEN;}
+/*COMMENT: SLASH SLASH ( options {greedy=false;} : .*)
+NEWLINE {$channel=HIDDEN;}
+       | SLASH STAR  ( options {greedy=false;} : ({ LA(2)!='/' }? '*'|~('*'|'/' ))*) STAR SLASH {$channel=HIDDEN;}
+    ;*/
+
+COMMENT
+    : '/*' ( options {greedy=false;} : .*) '*/' {$channel=HIDDEN;}
+    ;
+LINE_COMMENT
+    : '//' ~('\n')* '\n' {$channel=HIDDEN;}
     ;
 
-NEWLINE: '\r\n' | '\r' | '\n';
 
-STRING: DQUOTE ( ESC_SEQ | ~(BACKSLASH|DQUOTE) )* DQUOTE;
+NEWLINE: '\r\n' | '\n'; // preprocessing might take care of this for us
 
-TEXT: OBRACE DQUOTE
-	  ( options {greedy=false;} : . )*
-      // TODO: probably want to improve this, in case people do silly things
-      // like having escaped "} inside a text document
-      DQUOTE CBRACE;
+STRING: DQUOTE ( ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET) )* DQUOTE;
+
+INTERPOLATED_STRING_START: DQUOTE (ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET))* OBRACKET;
+INTERPOLATED_STRING_MIDDLE: CBRACKET (ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET))* OBRACKET;
+INTERPOLATED_STRING_END: CBRACKET (ESC_SEQ | ~(BACKSLASH|DQUOTE))* DQUOTE;
 
 DMI: SQUOTE ( ESC_SEQ | ~(SQUOTE|BACKSLASH) )* SQUOTE;
 
 fragment DIGIT: '0'..'9';
 fragment LETTER: 'a'..'z' | 'A'..'Z';
 fragment EXPONENT: ('e'|'E') (PLUS | MINUS)? (DIGIT)+;
-fragment HEX_DIGIT: (DIGIT|'a'..'f'|'A'..'F');
 
-fragment ESC_SEQ:   BACKSLASH ('b'|'t'|'n'|'f'|'r'|DQUOTE|SQUOTE|BACKSLASH)
-    |   UNICODE_ESC
-    |   OCTAL_ESC
-    ;
+fragment ESC_SEQ:   BACKSLASH (DQUOTE|SQUOTE|BACKSLASH|OBRACKET|CBRACKET|'...'|LT|GT|(LETTER|DIGIT)+);
 
-fragment
-OCTAL_ESC
-    :   BACKSLASH ('0'..'3') ('0'..'7') ('0'..'7')
-    |   BACKSLASH ('0'..'7') ('0'..'7')
-    |   BACKSLASH ('0'..'7')
-    ;
-
-fragment
-UNICODE_ESC
-    :   BACKSLASH 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
-    ;
