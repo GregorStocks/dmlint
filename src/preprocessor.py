@@ -1,5 +1,6 @@
 import re
 import os.path
+import sys
 
 '''A file which has had the preprocessor run on it.'''
 class PreprocessedFile(object):
@@ -28,6 +29,18 @@ class PreprocessedFile(object):
 						os.path.split(filename)[0])
 		# TODO: actually handle text documents the right way
 		self.data = re.sub('(?s){"(.+?)"}', '""', self.data)
+		self.data = re.sub('\\r', '', self.data)
+
+		# convert all instances of "xxx[yyy]zzz" to text("xxx[]zzz", yyy)
+		r = '''(?x)
+		"
+		(?P<left>(.*? [^\\\\]) | )
+		\[
+		(?P<middle>[^\]]*? [^\]\\\\])
+		\]
+		(?P<right>.*?)"'''
+		while re.search(r, self.data):
+			self.data = re.sub(r, lambda m: 'text("%s[]%s", %s)' % m.group('left', 'right', 'middle'), self.data)
 
 	def read(self, numbytes = -1):
 		if numbytes >= len(self.data) or numbytes < 0:
@@ -52,9 +65,8 @@ def process_line(line, defines, included, dir):
 	# if it's an #include, include it!
 	m = re.match('#include "(?P<filename>.+)"', line)
 	if m is not None:
-		f = PreprocessedFile(os.path.join(dir, m.group('filename')), defines,
-				included)
-		return f.read() + '\n'
+		return PreprocessedFile(os.path.join(dir, m.group('filename')), defines,
+				included).read() + '\n'
 	# TODO: #undef, __FILE__, #if, and all those other ones
 	# but they're lame so yknow
 	if line.strip().startswith('#'):

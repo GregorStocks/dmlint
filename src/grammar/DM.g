@@ -16,8 +16,6 @@ tokens {
 	SPACE = ' ';
 	TAB = '\t';
 	BACKSLASH = '\\';
-	SQUOTE = '\'';
-	DQUOTE = '"'; // to fix vim's syntax highlighting i'm gonna say " here
 	OBRACE = '{';
 	CBRACE = '}';
 	OPAREN = '(';
@@ -27,8 +25,8 @@ tokens {
 	EQ = '=';
 	AND = '&';
 	OR = '|';
-	OBRACKET = '[';
-	CBRACKET = ']';
+	LBRACKET = '[';
+	RBRACKET = ']';
 	NOT = '!';
 	COMMA = ',';
 	QUESTION = '?';
@@ -75,19 +73,15 @@ LINE_COMMENT
     ;
 
 
-NEWLINE: '\r\n' | '\n'; // preprocessing might take care of this for us
+NEWLINE: '\n'; // preprocessing removes \r
 
-STRING: DQUOTE ( ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET) )* DQUOTE;
+STRING: '"' ( ESC_SEQ | ~(BACKSLASH|'"') )* '"';
 
-INTERPOLATED_STRING_START: DQUOTE (ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET))* OBRACKET;
-INTERPOLATED_STRING_MIDDLE: CBRACKET (ESC_SEQ | ~(BACKSLASH|DQUOTE|OBRACKET))* OBRACKET;
-INTERPOLATED_STRING_END: CBRACKET (ESC_SEQ | ~(BACKSLASH|DQUOTE))* DQUOTE;
-
-DMI: SQUOTE ( ESC_SEQ | ~(SQUOTE|BACKSLASH) )* SQUOTE;
+DMI: '\'' ( ESC_SEQ | ~('\''|BACKSLASH) )* '\'';
 
 fragment DIGIT: '0'..'9';
 fragment LETTER: 'a'..'z' | 'A'..'Z';
 fragment EXPONENT: ('e'|'E') (PLUS | MINUS)? (DIGIT)+;
 
-fragment ESC_SEQ:   BACKSLASH (DQUOTE|SQUOTE|BACKSLASH|OBRACKET|CBRACKET|'...'|LT|GT|(LETTER|DIGIT)+);
+fragment ESC_SEQ:   BACKSLASH ('"'|'\''|BACKSLASH|LBRACKET|RBRACKET|'...'|LT|GT|(LETTER|DIGIT)+);
 
