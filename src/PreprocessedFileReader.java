@@ -6,7 +6,29 @@ import java.util.regex.*;
 
 class PreprocessedFileStream extends ANTLRStringStream {
 	PreprocessedFileStream(String filename) {
-		super(removeInterpolation(new StringReader(read(filename)), false));
+		super(removeInterpolation(new StringReader(preCanonicalize(read(filename))), false));
+	}
+
+	// Convert all text("...", arg) to interpolated strings. Because it's illegal to have text(text(str, arg)), and
+	// there's code which uses text("str [arg]"). Don't ask me why, even though I wrote some of it.
+	private static String preCanonicalize(String s) {
+		// Actually, since we don't strictly care if our lexed version is actual legal DM, we can skip this step.
+		return s;
+		/*
+		Matcher m = Pattern.compile("text \\s* \\( \\s* (\" .*? \") \\s* (.*?) \\s* \\)", Pattern.COMMENTS).matcher(s);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			// TODO: this is real inefficient
+			String result = m.group(1);
+			String[] args = m.group(2).split(","); // this doesn't work at ALL
+			for(String arg : args) {
+				result = result.replaceFirst("\\[\\]", "[" + arg + "]");
+			}
+			m.appendReplacement(sb, result);
+		}
+		m.appendTail(sb);
+		return sb.toString();
+		*/
 	}
 
 	// Convert all interpolated strings to text("...", arg) form. This is easier than doing it in the lexer.
@@ -29,7 +51,11 @@ class PreprocessedFileStream extends ANTLRStringStream {
 					} else if(c == '[') {
 						// BYOND requires that all [ in a string must have a matching ], so this is safe. Behavior is
 						// undefined with line continuations.
-						interpolations.add(removeInterpolation(r, false));
+						String s = removeInterpolation(r, false);
+						// Hack for when the text contains []
+						if(!s.equals("")) {
+							interpolations.add(s);
+						}
 						out.append("[]");
 					} else if(c == '\\') {
 						escaped = true;
@@ -97,6 +123,8 @@ class PreprocessedFileStream extends ANTLRStringStream {
 		return read(filename, defines, new HashSet<String>());
 	}
 
+	private static final Pattern TEXT_STRIP_PATTERN = Pattern.compile("\\{\".*?\"\\}", Pattern.DOTALL);
+
 	private static String read(String filename, Map<String, String> defines, Set<String> included) {
 		File f = new File(filename);
 		try {
@@ -129,8 +157,6 @@ class PreprocessedFileStream extends ANTLRStringStream {
 		}
 	}
 
-	private static final Pattern TEXT_STRIP_PATTERN = Pattern.compile("\\{\".*?\"\\}", Pattern.DOTALL);
-
 	private static final Pattern DEFINE_PATTERN = Pattern.compile("\\#define \\s+ (\\w+) \\s* (.*?) \\s*(//.*)?$",
 			Pattern.COMMENTS);
 	private static final Pattern INCLUDE_PATTERN = Pattern.compile("\\#include \\s+ \"(.+)\"", Pattern.COMMENTS);
@@ -144,20 +170,17 @@ class PreprocessedFileStream extends ANTLRStringStream {
 			defines.put(m.group(1), m.group(2));
 			return "";
 		}
-
 		// See if it's an #include.
 		m = INCLUDE_PATTERN.matcher(line);
 		if(m.matches()) {
 			// Although this is not how C++'s #include works (it tries parent dirs and so on), it is how DM's works.
 			return read(curdir + '/' + m.group(1), defines, included);
 		}
-
 		// Other preprocessor directives - ignore for now
 		m = PREPROCESSOR_PATTERN.matcher(line);
 		if(m.lookingAt()) {
 			return "";
 		}
-
 		return doReplacement(line, defines);
 	}
 
@@ -167,10 +190,8 @@ class PreprocessedFileStream extends ANTLRStringStream {
 		for(String key : defines.keySet()) {
 			line = line.replace(key, defines.get(key));
 		}
-
 		return line;
 	}
-
 
 	// For debugging - probably a little inefficient, requires copying a several-meg string.
 	public String getString() {

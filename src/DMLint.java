@@ -6,7 +6,7 @@ class DMLint {
     public static void main(String[] args) throws Exception {
 		PreprocessedFileStream f = new PreprocessedFileStream(args[0]);
 
-		//System.out.println(f.getString());
+		System.out.println(f.getString());
         DMLexer lex = new DMLexer(f);
        	CommonTokenStream tokens = new CommonTokenStream(lex);
 
